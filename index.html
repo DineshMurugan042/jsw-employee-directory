@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSW Shakti — Employee Directory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0c1e;min-height:100vh;color:#fff}
+
+/* ── LOGIN PAGE ─────────────────────────────────────────── */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(135deg,#0b0c1e 0%,#1a0533 40%,#0d1b4b 70%,#0a2a1a 100%);position:relative;overflow:hidden}
+.login-page::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;
+  background:radial-gradient(circle,rgba(124,58,237,0.2),transparent 70%);border-radius:50%;pointer-events:none}
+.login-page::after{content:'';position:absolute;bottom:-100px;left:-80px;width:350px;height:350px;
+  background:radial-gradient(circle,rgba(16,185,129,0.15),transparent 70%);border-radius:50%;pointer-events:none}
+.login-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:28px;
+  padding:44px 40px;max-width:420px;width:100%;position:relative;z-index:1;backdrop-filter:blur(20px);
+  box-shadow:0 24px 80px rgba(0,0,0,0.5)}
+.login-logo{width:64px;height:64px;background:linear-gradient(135deg,#7c3aed,#db2777);border-radius:20px;
+  display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;
+  box-shadow:0 8px 32px rgba(124,58,237,0.4)}
+.login-title{font-size:26px;font-weight:800;text-align:center;margin-bottom:6px;
+  background:linear-gradient(135deg,#c4b5fd,#6ee7b7,#fbcfe8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-sub{font-size:13px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:32px}
+.login-label{font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;
+  letter-spacing:0.6px;display:block;margin-bottom:8px}
+.login-input{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.06);color:#fff;font-size:14px;outline:none;transition:all 0.2s;
+  font-family:'Segoe UI',sans-serif;margin-bottom:18px}
+.login-input::placeholder{color:rgba(255,255,255,0.25)}
+.login-input:focus{border-color:#7c3aed;background:rgba(124,58,237,0.1)}
+.login-input.err{border-color:#f87171;background:rgba(248,113,113,0.08)}
+.pw-wrap{position:relative}
+.pw-wrap .login-input{padding-right:46px;margin-bottom:0}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px;padding:4px}
+.pw-toggle:hover{color:#fff}
+.login-err{font-size:12px;color:#f87171;margin:10px 0 18px;min-height:18px;text-align:center;font-weight:600}
+.login-btn{width:100%;padding:14px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:'Segoe UI',sans-serif;transition:opacity 0.2s;margin-top:6px;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.login-btn:hover{opacity:0.88}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed}
+.login-footer{text-align:center;margin-top:24px;font-size:12px;color:rgba(255,255,255,0.2)}
+.login-divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.login-divider hr{flex:1;border:none;border-top:1px solid rgba(255,255,255,0.08)}
+.login-divider span{font-size:11px;color:rgba(255,255,255,0.2);white-space:nowrap}
+.access-note{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:12px;
+  padding:12px 16px;font-size:12px;color:rgba(255,255,255,0.4);text-align:center;line-height:1.6}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.header{background:linear-gradient(135deg,#1a0533 0%,#0d1b4b 40%,#0a2a1a 70%,#1a0533 100%);
+  padding:22px 32px 20px;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,0.07)}
+.header::before{content:'';position:absolute;top:-70px;right:-70px;width:280px;height:280px;
+  background:radial-gradient(circle,rgba(147,51,234,0.3),transparent 70%);border-radius:50%;pointer-events:none}
+.hrow{display:flex;align-items:center;gap:14px;margin-bottom:4px;position:relative;z-index:1}
+.hlogo{width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#db2777);border-radius:13px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 4px 20px rgba(124,58,237,0.45);flex-shrink:0}
+.htitle{font-size:22px;font-weight:800;
+  background:linear-gradient(135deg,#c4b5fd,#6ee7b7,#fbcfe8);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;letter-spacing:-0.3px}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.user-chip{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:20px;
+  padding:6px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:6px}
+.logout-btn{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);color:#f87171;
+  border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Segoe UI',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+.logout-btn:hover{background:rgba(248,113,113,0.2)}
+.hsub{font-size:12px;color:rgba(255,255,255,0.35);margin-left:58px;position:relative;z-index:1}
+.stats-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;position:relative;z-index:1}
+.scard{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:30px;
+  padding:6px 16px;display:flex;align-items:center;gap:8px;backdrop-filter:blur(10px)}
+.snum{font-size:18px;font-weight:800}.slbl{font-size:11px;color:rgba(255,255,255,0.55);font-weight:600}
+.snum.purple{background:linear-gradient(135deg,#a78bfa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.snum.green{background:linear-gradient(135deg,#34d399,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.snum.pink{background:linear-gradient(135deg,#f9a8d4,#fb7185);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.snum.yellow{background:linear-gradient(135deg,#fbbf24,#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.snum.cyan{background:linear-gradient(135deg,#67e8f9,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.last-updated{font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;position:relative;z-index:1}
+.last-updated span{color:#34d399;font-weight:600}
+.refresh-btn{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);color:#34d399;
+  border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;margin-left:8px;
+  font-family:'Segoe UI',sans-serif;transition:all 0.2s}
+.refresh-btn:hover{background:rgba(52,211,153,0.2)}
+
+/* ── CONTROLS ───────────────────────────────────────────── */
+.controls-bar{background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 32px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;max-width:1400px;margin:0 auto}
+.search-wrap{flex:1;min-width:220px;position:relative}
+.search-wrap input{width:100%;padding:10px 14px 10px 40px;border-radius:12px;
+  border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);
+  color:#fff;font-size:14px;outline:none;transition:all 0.2s}
+.search-wrap input::placeholder{color:rgba(255,255,255,0.3)}
+.search-wrap input:focus{border-color:#7c3aed;background:rgba(124,58,237,0.1)}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;opacity:0.4}
+select{padding:10px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.06);color:#fff;font-size:13px;outline:none;cursor:pointer;font-weight:500}
+select option{background:#1a0533;color:#fff}
+.vt{display:flex;border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden}
+.vbtn{padding:9px 15px;border:none;background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;font-size:15px;transition:all 0.2s}
+.vbtn.on{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}
+.dl{padding:10px 20px;background:linear-gradient(135deg,#059669,#0891b2);color:#fff;border:none;
+  border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;transition:opacity 0.2s}
+.dl:hover{opacity:0.88}
+.status-btns{display:flex;gap:8px}
+.sbtn{padding:7px 16px;border-radius:30px;border:2px solid;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;background:transparent}
+.sbtn-all{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)}
+.sbtn-all.on{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.4)}
+.sbtn-active{border-color:rgba(52,211,153,0.4);color:#34d399}
+.sbtn-active.on{background:rgba(52,211,153,0.2);border-color:#34d399}
+.sbtn-inactive{border-color:rgba(248,113,113,0.4);color:#f87171}
+.sbtn-inactive.on{background:rgba(248,113,113,0.2);border-color:#f87171}
+
+/* ── MAIN ───────────────────────────────────────────────── */
+.main{max-width:1400px;margin:0 auto;padding:18px 24px 40px}
+.rbar{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:14px}
+.rbar strong{color:#a78bfa}
+
+/* Loading / Error */
+.loading-state{text-align:center;padding:80px 20px}
+.spin{animation:spin 1.2s linear infinite;display:inline-block;font-size:48px;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-t{font-size:18px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.loading-s{font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:20px}
+.loading-bar{width:260px;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;margin:0 auto;overflow:hidden}
+.loading-fill{height:100%;background:linear-gradient(135deg,#7c3aed,#34d399);border-radius:10px;animation:loadpulse 1.5s ease infinite}
+@keyframes loadpulse{0%{width:10%}50%{width:80%}100%{width:10%}}
+.error-state{text-align:center;padding:60px 20px}
+.error-ico{font-size:50px;margin-bottom:14px}
+.error-t{font-size:18px;font-weight:700;color:#f87171;margin-bottom:8px}
+.error-s{font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:20px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6}
+.retry-btn{padding:10px 24px;background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:14px}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s,box-shadow 0.2s}
+.card:hover{transform:translateY(-4px);border-color:rgba(124,58,237,0.5);box-shadow:0 12px 40px rgba(124,58,237,0.18)}
+.cbanner{height:64px;position:relative}
+.cav{width:54px;height:54px;border-radius:50%;border:3px solid rgba(255,255,255,0.12);position:absolute;left:16px;bottom:-22px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.35)}
+.cbody{padding:30px 16px 16px}
+.cname{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.crole{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px}
+.ctags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.tloc{background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.25)}
+.tproc{background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.25)}
+.tdept{background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.25)}
+.ta{background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3)}
+.ti{background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)}
+.cdet{font-size:12px;color:rgba(255,255,255,0.3);margin-top:5px}
+
+/* Table */
+.twrap{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:auto}
+.dt{width:100%;border-collapse:collapse;font-size:13px}
+.dt th{background:linear-gradient(135deg,rgba(124,58,237,0.55),rgba(219,39,119,0.35));color:#fff;padding:12px 14px;text-align:left;font-weight:700;font-size:11.5px;letter-spacing:0.4px;cursor:pointer;white-space:nowrap;user-select:none}
+.dt th:hover{background:linear-gradient(135deg,rgba(124,58,237,0.75),rgba(219,39,119,0.55))}
+.dt td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.78);vertical-align:middle;white-space:nowrap}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:rgba(124,58,237,0.07);cursor:pointer}
+.tav{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;margin-right:8px;vertical-align:middle}
+.ttag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+
+/* Pagination */
+.pag{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.pbtn{padding:8px 14px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);border-radius:10px;font-size:13px;cursor:pointer;color:#a78bfa;font-weight:600;transition:all 0.15s}
+.pbtn:hover:not(:disabled){background:linear-gradient(135deg,#7c3aed,#db2777);border-color:transparent;color:#fff}
+.pbtn.on{background:linear-gradient(135deg,#7c3aed,#db2777);border-color:transparent;color:#fff}
+.pbtn:disabled{opacity:0.25;cursor:not-allowed}
+
+/* Modal */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(8px);padding:16px}
+.modal{background:linear-gradient(145deg,#180a2e,#0d1840);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:0;max-width:580px;width:100%;position:relative;max-height:90vh;overflow-y:auto}
+.mbanner{padding:24px 24px 20px;position:relative}
+.mclose{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;color:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center}
+.mclose:hover{background:rgba(255,255,255,0.18)}
+.mav{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:#fff;margin-bottom:12px}
+.mname{font-size:20px;font-weight:800;color:#fff;margin-bottom:3px}
+.msub{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.msection{padding:0 24px 6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.3);margin-top:14px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 24px}
+.mf{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px}
+.mf label{font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px}
+.mf .val{font-size:14px;font-weight:600;color:#fff;word-break:break-word}
+.mf.wide{grid-column:1/-1}
+.mf.sensitive .val{font-family:monospace;font-size:13px;color:#fbbf24;letter-spacing:1px}
+.mpb{height:24px}
+.empty{text-align:center;padding:80px 20px;color:rgba(255,255,255,0.25)}
+.empty-ico{font-size:50px;margin-bottom:14px}
+.empty-t{font-size:17px;font-weight:700;margin-bottom:6px;color:rgba(255,255,255,0.4)}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN PAGE ──────────────────────────────────────────── -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">👥</div>
+    <div class="login-title">JSW Shakti</div>
+    <div class="login-sub">Employee Directory · Authorised Access Only</div>
+
+    <label class="login-label">Work Email</label>
+    <input type="email" class="login-input" id="loginEmail" placeholder="yourname@jsw.in" onkeydown="if(event.key==='Enter')doLogin()"/>
+
+    <label class="login-label">Password</label>
+    <div class="pw-wrap">
+      <input type="password" class="login-input" id="loginPw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="pw-toggle" onclick="togglePw()" id="pwToggle">👁</button>
+    </div>
+
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">
+      <span id="loginBtnText">Sign In →</span>
+    </button>
+
+    <div class="login-divider"><hr><span>Authorised Personnel Only</span><hr></div>
+    <div class="access-note">Access is restricted to approved JSW Shakti HR team members only. Contact your admin if you need access.</div>
+    <div class="login-footer">JSW Shakti · Employee Directory v2.0</div>
+  </div>
+</div>
+
+<!-- ── DIRECTORY PAGE ─────────────────────────────────────── -->
+<div id="directoryPage" style="display:none">
+  <div class="header">
+    <div class="hrow">
+      <div class="hlogo">👥</div>
+      <div class="htitle">JSW Shakti — Employee Directory</div>
+      <div class="hright">
+        <div class="user-chip">👤 <span id="loggedUserEmail"></span></div>
+        <button class="logout-btn" onclick="doLogout()">⎋ Logout</button>
+      </div>
+    </div>
+    <div class="hsub">Live data · Auto-synced from SharePoint Excel</div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="last-updated" id="lastUpdated" style="display:none">
+      Fetched at: <span id="lastUpdatedTime"></span>
+      <button class="refresh-btn" onclick="loadFromSharePoint()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="controls-bar" id="controlsBar" style="display:none">
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="si">🔍</span>
+        <input type="text" id="srch" placeholder="Search name, EMP code, designation, PAN, AADHAAR…" oninput="applyFilters()"/>
+      </div>
+      <select id="locF" onchange="applyFilters()"><option value="">All Locations</option></select>
+      <select id="procF" onchange="applyFilters()"><option value="">All Processes</option></select>
+      <select id="deptF" onchange="applyFilters()"><option value="">All Departments</option></select>
+      <div class="vt">
+        <button class="vbtn on" id="cvBtn" title="Card View" onclick="setView('card')">⊞</button>
+        <button class="vbtn" id="tvBtn" title="Table View" onclick="setView('table')">☰</button>
+      </div>
+      <button class="dl" onclick="download()">⬇ Download</button>
+      <div class="status-btns">
+        <button class="sbtn sbtn-all on" id="btnAll" onclick="setStatus('')">All</button>
+        <button class="sbtn sbtn-active" id="btnActive" onclick="setStatus('Active')">● Active</button>
+        <button class="sbtn sbtn-inactive" id="btnInactive" onclick="setStatus('Inactive')">● Inactive</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="loading-state" id="loadingState">
+      <div class="spin">⚙️</div>
+      <div class="loading-t">Fetching employee data…</div>
+      <div class="loading-s">Loading from SharePoint Excel file</div>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+    <div class="error-state" id="errorState" style="display:none">
+      <div class="error-ico">⚠️</div>
+      <div class="error-t">Could not load data</div>
+      <div class="error-s" id="errorMsg"></div>
+      <button class="retry-btn" onclick="loadFromSharePoint()">↻ Try Again</button>
+    </div>
+    <div id="dataContent" style="display:none">
+      <div class="rbar" id="rbar"></div>
+      <div id="cardView" class="cards"></div>
+      <div id="tableView" style="display:none"><div class="twrap"><table class="dt" id="tbl"></table></div></div>
+      <div id="emptyState" class="empty" style="display:none">
+        <div class="empty-ico">🔎</div>
+        <div class="empty-t">No employees found</div>
+        <div>Try adjusting your search or filters</div>
+      </div>
+      <div class="pag" id="pag"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EMPLOYEE MODAL ─────────────────────────────────────── -->
+<div id="mbg" class="mbg" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="minner"></div>
+</div>
+
+<script>
+// ── ACCESS CONTROL ────────────────────────────────────────────
+const ALLOWED_EMAILS = [
+  'pooja.bk@jsw.in',
+  'piyush.sarkar@jsw.in',
+  'mayur.lokare@jsw.in',
+  'muthuvel.s@jsw.in',
+  'dineshmurugan@jsw.in'   // Admin — always has access
+];
+const SHARED_PASSWORD = 'JSWShakti@2026';
+const SESSION_KEY     = 'jsw_dir_user';
+
+// ── SHAREPOINT EXCEL URL ──────────────────────────────────────
+const EXCEL_URL = 'https://jsw-my.sharepoint.com/:x:/g/personal/dinesh_murugan_jsw_in/IQDzoPjHX8sySIT8TzpHOG28AWAGHaUhEX88p_B0bAMIfqw?e=D8H4EQ&download=1';
+const PROXY     = 'https://corsproxy.io/?';
+
+const COLORS  = ['#7c3aed','#db2877','#0891b2','#059669','#d97706','#dc2626','#9333ea','#0284c7','#ea580c','#0f766e'];
+const BANNERS = ['linear-gradient(135deg,#3b0764,#7c3aed)','linear-gradient(135deg,#831843,#db2877)','linear-gradient(135deg,#0c4a6e,#0891b2)','linear-gradient(135deg,#064e3b,#059669)','linear-gradient(135deg,#78350f,#d97706)','linear-gradient(135deg,#4c1d95,#9333ea)','linear-gradient(135deg,#0c4a6e,#0284c7)','linear-gradient(135deg,#7c2d12,#ea580c)'];
+
+let ALL=[],filtered=[],view='card',page=1,statusFilter='',sortKey='',sortAsc=true;
+const PAGE=24;
+
+function gc(s){let h=0;for(let c of(s||''))h=(h<<5)-h+c.charCodeAt(0);return COLORS[Math.abs(h)%COLORS.length]}
+function gb(s){let h=0;for(let c of(s||''))h=(h<<5)-h+c.charCodeAt(0);return BANNERS[Math.abs(h)%BANNERS.length]}
+function ini(n){return(n||'?').split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('')||'?'}
+function uniq(a){return[...new Set(a.filter(Boolean))].sort()}
+function g(r,k){return String(r[k]||'')}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+function togglePw(){
+  const inp=document.getElementById('loginPw');
+  const btn=document.getElementById('pwToggle');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+
+function doLogin(){
+  const email  = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pw     = document.getElementById('loginPw').value;
+  const errEl  = document.getElementById('loginErr');
+  const btn    = document.getElementById('loginBtn');
+  const btnTxt = document.getElementById('loginBtnText');
+
+  errEl.textContent='';
+  document.getElementById('loginEmail').classList.remove('err');
+  document.getElementById('loginPw').classList.remove('err');
+
+  if(!email){errEl.textContent='Please enter your email address.';document.getElementById('loginEmail').classList.add('err');return;}
+  if(!pw){errEl.textContent='Please enter your password.';document.getElementById('loginPw').classList.add('err');return;}
+  if(!email.endsWith('@jsw.in')){errEl.textContent='Only JSW email addresses are allowed.';document.getElementById('loginEmail').classList.add('err');return;}
+  if(!ALLOWED_EMAILS.includes(email)){errEl.textContent='Your email is not authorised. Contact your admin.';document.getElementById('loginEmail').classList.add('err');return;}
+  if(pw!==SHARED_PASSWORD){errEl.textContent='Incorrect password. Please try again.';document.getElementById('loginPw').classList.add('err');document.getElementById('loginPw').value='';return;}
+
+  // Success
+  btn.disabled=true; btnTxt.textContent='Signing in…';
+  sessionStorage.setItem(SESSION_KEY, email);
+  setTimeout(()=>enterDirectory(email), 600);
+}
+
+function enterDirectory(email){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('directoryPage').style.display='block';
+  document.getElementById('loggedUserEmail').textContent=email;
+  loadFromSharePoint();
+}
+
+function doLogout(){
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+// ── FETCH DATA ────────────────────────────────────────────────
+async function loadFromSharePoint(){
+  document.getElementById('loadingState').style.display='block';
+  document.getElementById('errorState').style.display='none';
+  document.getElementById('dataContent').style.display='none';
+  document.getElementById('controlsBar').style.display='none';
+  document.getElementById('statsRow').innerHTML='';
+  document.getElementById('lastUpdated').style.display='none';
+
+  try{
+    const res = await fetch(PROXY + encodeURIComponent(EXCEL_URL));
+    if(!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+    const buf = await res.arrayBuffer();
+    const wb  = XLSX.read(buf,{type:'array',cellDates:true});
+    const ws  = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json(ws,{defval:''});
+
+    const dateFields=['DOB','DOJ','DOL'];
+    ALL = raw.map((r,i)=>{
+      const row={...r,_idx:i};
+      dateFields.forEach(f=>{
+        if(row[f] instanceof Date) row[f]=row[f].toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+        else if(row[f]&&!isNaN(Date.parse(row[f]))) row[f]=new Date(row[f]).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      });
+      if(row['Mobile Number']) row['Mobile Number']=String(row['Mobile Number']).split('.')[0];
+      return row;
+    }).filter(r=>r['Name (As per AADHAAR)']&&String(r['Name (As per AADHAAR)']).trim()!=='');
+
+    filtered=[...ALL];
+    const now=new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+    document.getElementById('lastUpdatedTime').textContent=now;
+    document.getElementById('lastUpdated').style.display='block';
+    buildStats(); buildFilters();
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('controlsBar').style.display='block';
+    document.getElementById('dataContent').style.display='block';
+    page=1;statusFilter='';sortKey='';sortAsc=true;
+    document.getElementById('srch').value='';
+    ['locF','procF','deptF'].forEach(id=>{document.getElementById(id).selectedIndex=0;});
+    ['btnAll','btnActive','btnInactive'].forEach(id=>document.getElementById(id).classList.remove('on'));
+    document.getElementById('btnAll').classList.add('on');
+    applyFilters();
+  }catch(err){
+    document.getElementById('loadingState').style.display='none';
+    document.getElementById('errorState').style.display='block';
+    document.getElementById('errorMsg').innerHTML=`Unable to fetch data from SharePoint.<br><br><strong>Reason:</strong> ${err.message}<br><br>Make sure the Excel sharing is set to <strong>"Anyone with the link can view"</strong>.`;
+  }
+}
+
+function buildStats(){
+  const active=ALL.filter(r=>g(r,'Resigned / Active')==='Active').length;
+  const locs=uniq(ALL.map(r=>g(r,'Location'))).length;
+  const procs=uniq(ALL.map(r=>g(r,'PROCESS NAME'))).length;
+  document.getElementById('statsRow').innerHTML=
+    `<div class="scard"><span class="snum purple">${ALL.length}</span><span class="slbl">Total</span></div>`+
+    `<div class="scard"><span class="snum green">${active}</span><span class="slbl">Active</span></div>`+
+    `<div class="scard"><span class="snum pink">${ALL.length-active}</span><span class="slbl">Inactive</span></div>`+
+    `<div class="scard"><span class="snum yellow">${locs}</span><span class="slbl">Locations</span></div>`+
+    `<div class="scard"><span class="snum cyan">${procs}</span><span class="slbl">Processes</span></div>`;
+}
+
+function buildFilters(){
+  const fill=(id,label,items)=>{const s=document.getElementById(id);s.innerHTML=`<option value="">${label}</option>`;items.forEach(v=>{const o=document.createElement('option');o.value=o.textContent=v;s.appendChild(o);});};
+  fill('locF','All Locations',uniq(ALL.map(r=>g(r,'Location'))));
+  fill('procF','All Processes',uniq(ALL.map(r=>g(r,'PROCESS NAME'))));
+  fill('deptF','All Departments',uniq(ALL.map(r=>g(r,'Department'))));
+}
+
+function setStatus(s){
+  statusFilter=s;
+  document.getElementById('btnAll').classList.toggle('on',s==='');
+  document.getElementById('btnActive').classList.toggle('on',s==='Active');
+  document.getElementById('btnInactive').classList.toggle('on',s==='Inactive');
+  applyFilters();
+}
+
+function applyFilters(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const loc=document.getElementById('locF').value;
+  const proc=document.getElementById('procF').value;
+  const dept=document.getElementById('deptF').value;
+  filtered=ALL.filter(r=>{
+    if(loc&&g(r,'Location')!==loc)return false;
+    if(proc&&g(r,'PROCESS NAME')!==proc)return false;
+    if(dept&&g(r,'Department')!==dept)return false;
+    if(statusFilter&&g(r,'Resigned / Active')!==statusFilter)return false;
+    if(q){const s=Object.values(r).join(' ').toLowerCase();if(!s.includes(q))return false;}
+    return true;
+  });
+  page=1;render();
+}
+
+function setView(v){
+  view=v;
+  document.getElementById('cvBtn').classList.toggle('on',v==='card');
+  document.getElementById('tvBtn').classList.toggle('on',v==='table');
+  document.getElementById('cardView').style.display=v==='card'?'grid':'none';
+  document.getElementById('tableView').style.display=v==='table'?'block':'none';
+  render();
+}
+
+function render(){
+  const start=(page-1)*PAGE,end=start+PAGE;
+  const pageData=filtered.slice(start,end);
+  document.getElementById('rbar').innerHTML=`Showing <strong>${filtered.length}</strong> of <strong>${ALL.length}</strong> employees`;
+  const empty=document.getElementById('emptyState');
+  if(filtered.length===0){empty.style.display='block';document.getElementById('cardView').innerHTML='';document.getElementById('tbl').innerHTML='';document.getElementById('pag').innerHTML='';return;}
+  empty.style.display='none';
+  if(view==='card')renderCards(pageData);else renderTable(pageData);
+  renderPag();
+}
+
+function statusTag(s){return s==='Active'?'<span class="tag ta">● Active</span>':'<span class="tag ti">● Inactive</span>';}
+
+function renderCards(data){
+  document.getElementById('cardView').innerHTML=data.map(r=>{
+    const name=g(r,'Name (As per AADHAAR)')||'Unknown';
+    const color=gc(name);
+    return `<div class="card" onclick="showModal(${r._idx})">
+      <div class="cbanner" style="background:${gb(name)}"><div class="cav" style="background:${color}">${ini(name)}</div></div>
+      <div class="cbody">
+        <div class="cname">${name}</div>
+        <div class="crole">${g(r,'Designation')||g(r,'EMP Code')||'—'}</div>
+        <div class="ctags">
+          ${g(r,'Location')?`<span class="tag tloc">📍 ${g(r,'Location')}</span>`:''}
+          ${g(r,'PROCESS NAME')?`<span class="tag tproc">⚙ ${g(r,'PROCESS NAME')}</span>`:''}
+          ${g(r,'Department')?`<span class="tag tdept">🏢 ${g(r,'Department')}</span>`:''}
+          ${statusTag(g(r,'Resigned / Active'))}
+        </div>
+        ${g(r,'EMP Code')?`<div class="cdet">🪪 ${g(r,'EMP Code')}</div>`:''}
+        ${g(r,'Mobile Number')?`<div class="cdet">📱 ${g(r,'Mobile Number')}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const TABLE_COLS=['EMP Code','Name (As per AADHAAR)','Gender','Location','PROCESS NAME','Department','Designation','Employment Type','DOJ','DOB','DOL','State (Current)','PAN','AADHAAR','Mobile Number','Grade','Resigned / Active'];
+
+function renderTable(data){
+  const thead=`<thead><tr>${TABLE_COLS.map(h=>`<th onclick="sortBy('${h}')">${h} ${sortKey===h?(sortAsc?'↑':'↓'):'↕'}</th>`).join('')}</tr></thead>`;
+  const tbody=`<tbody>${data.map(r=>{
+    const name=g(r,'Name (As per AADHAAR)')||'Unknown';
+    const status=g(r,'Resigned / Active');
+    const color=gc(name);
+    return `<tr onclick="showModal(${r._idx})">${TABLE_COLS.map(h=>{
+      const v=g(r,h)||'—';
+      if(h==='Name (As per AADHAAR)')return `<td><span class="tav" style="background:${color}">${ini(name)}</span>${name}</td>`;
+      if(h==='Location')return `<td><span class="ttag tloc">${v}</span></td>`;
+      if(h==='PROCESS NAME')return `<td><span class="ttag tproc">${v}</span></td>`;
+      if(h==='Department')return `<td><span class="ttag tdept">${v}</span></td>`;
+      if(h==='Resigned / Active')return `<td>${status==='Active'?'<span class="ttag ta">● Active</span>':'<span class="ttag ti">● Inactive</span>'}</td>`;
+      if(h==='PAN'||h==='AADHAAR')return `<td style="font-family:monospace;color:#fbbf24">${v}</td>`;
+      return `<td>${v}</td>`;
+    }).join('')}</tr>`;
+  }).join('')}</tbody>`;
+  document.getElementById('tbl').innerHTML=thead+tbody;
+}
+
+function sortBy(k){
+  if(sortKey===k)sortAsc=!sortAsc;else{sortKey=k;sortAsc=true;}
+  filtered.sort((a,b)=>{const av=g(a,k),bv=g(b,k);return sortAsc?av.localeCompare(bv,undefined,{numeric:true}):bv.localeCompare(av,undefined,{numeric:true});});
+  render();
+}
+
+function renderPag(){
+  const total=Math.ceil(filtered.length/PAGE);
+  if(total<=1){document.getElementById('pag').innerHTML='';return;}
+  let html=`<button class="pbtn" ${page===1?'disabled':''} onclick="goPage(${page-1})">← Prev</button>`;
+  for(let i=1;i<=total;i++){
+    if(i===1||i===total||Math.abs(i-page)<=1)html+=`<button class="pbtn ${i===page?'on':''}" onclick="goPage(${i})">${i}</button>`;
+    else if(Math.abs(i-page)===2)html+=`<span style="color:rgba(255,255,255,0.2);padding:0 4px">…</span>`;
+  }
+  html+=`<button class="pbtn" ${page===total?'disabled':''} onclick="goPage(${page+1})">Next →</button>`;
+  document.getElementById('pag').innerHTML=html;
+}
+function goPage(p){page=p;render();window.scrollTo(0,200);}
+
+function showModal(idx){
+  const r=ALL.find(x=>x._idx===idx);if(!r)return;
+  const name=g(r,'Name (As per AADHAAR)')||'Unknown';
+  const color=gc(name);
+  const status=g(r,'Resigned / Active');
+  const stTag=status==='Active'?'<span class="tag ta">● Active</span>':'<span class="tag ti">● Inactive</span>';
+  const section=(t)=>`</div><div class="msection">${t}</div><div class="mgrid">`;
+  const field=(label,val,wide=false,sensitive=false)=>val&&val!=='—'&&val!==''?`<div class="mf${wide?' wide':''}${sensitive?' sensitive':''}"><label>${label}</label><div class="val">${val}</div></div>`:'';
+  document.getElementById('minner').innerHTML=`
+    <div class="mbanner" style="background:${gb(name)}">
+      <button class="mclose" onclick="closeModal()">✕</button>
+      <div class="mav" style="background:${color}">${ini(name)}</div>
+      <div class="mname">${name}</div>
+      <div class="msub">${g(r,'Designation')||''} ${stTag}</div>
+    </div>
+    <div class="msection">👤 Personal Information</div>
+    <div class="mgrid">
+      ${field('EMP Code',g(r,'EMP Code'))}
+      ${field('Gender',g(r,'Gender'))}
+      ${field('Date of Birth',g(r,'DOB'))}
+      ${field('Age',g(r,'Age')?g(r,'Age')+' yrs':'')}
+      ${field('Marital Status',g(r,'Marital status'))}
+      ${field('Religion',g(r,'Religion'))}
+      ${field('Father Name',g(r,'Father Name'))}
+      ${field('Mobile Number',g(r,'Mobile Number'))}
+      ${field('Email',g(r,'Email Id '),true)}
+      ${field('Primary Language',g(r,'Primary Language'))}
+      ${field('Secondary Language',g(r,'Secondary Language'))}
+    ${section('🆔 Identity Documents')}
+      ${field('PAN',g(r,'PAN'),false,true)}
+      ${field('AADHAAR',g(r,'AADHAAR'),false,true)}
+    ${section('📍 Address & Location')}
+      ${field('Current Address',g(r,'Current Address'),true)}
+      ${field('AADHAR Address',g(r,'AADHAR Address'),true)}
+      ${field('State',g(r,'State (Current)'))}
+      ${field('Location',g(r,'Location'))}
+    ${section('💼 Employment Details')}
+      ${field('Department',g(r,'Department'))}
+      ${field('Process',g(r,'PROCESS NAME'))}
+      ${field('Designation',g(r,'Designation'))}
+      ${field('Employment Type',g(r,'Employment Type'))}
+      ${field('Grade',g(r,'Grade'))}
+      ${field('WFO / WFH',g(r,'WFO/ WFH'))}
+      ${field('Profile',g(r,'Profile'))}
+      ${field('Function',g(r,'Function'))}
+      ${field('Batch No',g(r,'Batch No'))}
+      ${field('Office Transport',g(r,'Using office transport'))}
+    ${section('📅 Dates & Tenure')}
+      ${field('Date of Joining',g(r,'DOJ'))}
+      ${field('Date of Leaving',g(r,'DOL'))}
+      ${field('Tenure',g(r,'Tenurity with Shakti'),true)}
+    ${section('🎓 Education & Experience')}
+      ${field('Qualification',g(r,'Qualification'))}
+      ${field('Education Level',g(r,'Education Level'))}
+      ${field('Overall Experience',g(r,'Overall Experience')?g(r,'Overall Experience')+' yrs':'')}
+    </div><div class="mpb"></div>`;
+  document.getElementById('mbg').style.display='flex';
+}
+function closeModal(){document.getElementById('mbg').style.display='none';}
+
+function download(){
+  const wb=XLSX.utils.book_new();
+  const exp=filtered.map(r=>{const c={...r};delete c._idx;return c;});
+  const ws=XLSX.utils.json_to_sheet(exp);
+  XLSX.utils.book_append_sheet(wb,ws,'Employees');
+  XLSX.writeFile(wb,`JSWShakti_Employees_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// ── INIT — check existing session ────────────────────────────
+(function(){
+  const saved = sessionStorage.getItem(SESSION_KEY);
+  if(saved && ALLOWED_EMAILS.includes(saved)){
+    document.getElementById('loginPage').style.display='none';
+    enterDirectory(saved);
+  }
+})();
+</script>
+</body>
+</html>
